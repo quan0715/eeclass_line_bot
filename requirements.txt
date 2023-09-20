@@ -11,7 +11,11 @@ future==0.18.3
 idna==3.4
 line-bot-sdk==2.4.2
 multidict==6.0.4
+oauthlib==3.2.2
+python-dotenv==1.0.0
 requests==2.28.2
 sqlparse==0.4.4
+typing_extensions==4.8.0
+tzdata==2023.3
 urllib3==1.26.16
 yarl==1.9.2
