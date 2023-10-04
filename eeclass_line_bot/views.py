@@ -15,7 +15,8 @@ from linebot.models import MessageEvent, TextSendMessage, FollowEvent, TemplateS
 from notion_auth.models import LineUser
 import uuid
 from django.core.cache import cache
-from chatBotExtension import handle
+from .chatBotExtension import handle
+from .chatBotModel import *
 
 # The URL of this server
 
@@ -68,7 +69,7 @@ class LineBotCallbackView(View):
 
     @handler.add(MessageEvent, message=TextSendMessage)
     def message_handler(self, event):
-        handle(event)
+        self.line_bot_api.reply_message(event.reply_token, TextSendMessage(handle(event)))
         # print("User ID:", event.source.user_id)  # 打印出 User ID
         # text: str = event.message.text
         # user_id = event.source.user_id
@@ -130,15 +131,15 @@ class LineBotCallbackView(View):
         #     print(text)
         #     self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=text))
 
-    @handler.add(PostbackEvent)
-    def handle_postback(self, event):
-        postback_data = event.postback.data  # This will contain 'action=set_password'
-        print(postback_data)
-        if postback_data == 'action=設定帳號':
-            self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text="輸入EECLASS帳號"))
+    # @handler.add(PostbackEvent)
+    # def handle_postback(self, event):
+    #     postback_data = event.postback.data  # This will contain 'action=set_password'
+    #     print(postback_data)
+    #     if postback_data == 'action=設定帳號':
+    #         self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text="輸入EECLASS帳號"))
      
-    def connect_with_eeclass(self, message):
-        pass
+    # def connect_with_eeclass(self, message):
+    #     pass
 
     @classmethod
     def update_auth_token(cls,user_id):
