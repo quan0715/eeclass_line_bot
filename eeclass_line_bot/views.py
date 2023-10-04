@@ -12,25 +12,22 @@ from linebot.exceptions import InvalidSignatureError, LineBotApiError
 from linebot.models import MessageEvent, TextSendMessage, FollowEvent, TemplateSendMessage, ButtonsTemplate, \
     MessageAction, PostbackAction, PostbackEvent
 
-from notion_auth.models import LineUser
-import uuid
-from django.core.cache import cache
 from .chatBotExtension import handle
 from .chatBotModel import *
 
 # The URL of this server
 
 
-def check_user_info(user: LineUser) -> str:
-    is_connect_with_notion = user.notion_token is not None
-    print(user.eeclass_username, user.eeclass_password)
-    is_connect_with_eeclass = user.eeclass_password is not None and user.eeclass_username is not None
-    return f"""確認身份訊息\n \
-Notion 資料庫連線 {is_connect_with_notion}\n \
-EECLASS 連線 {is_connect_with_eeclass}\n \
-如需連線 Notion 資料庫請打 notion 或 重新授權Notion\n \
-如需連線 EECLASS 請說 eeclass\n \
-    """
+# def check_user_info(user: LineUser) -> str:
+#     is_connect_with_notion = user.notion_token is not None
+#     print(user.eeclass_username, user.eeclass_password)
+#     is_connect_with_eeclass = user.eeclass_password is not None and user.eeclass_username is not None
+#     return f"""確認身份訊息\n \
+# Notion 資料庫連線 {is_connect_with_notion}\n \
+# EECLASS 連線 {is_connect_with_eeclass}\n \
+# 如需連線 Notion 資料庫請打 notion 或 重新授權Notion\n \
+# 如需連線 EECLASS 請說 eeclass\n \
+#     """
     # self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
 
 

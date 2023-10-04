@@ -32,7 +32,7 @@ def handle(event):
         print(e)
 
 
-def jump_to(func:callable, event, prob=False):
+def jump_to(func:callable, event):
     try:
         user_id = event.source.user_id
         status_exists = ChatStatus.objects.filter(line_user_id=user_id)
