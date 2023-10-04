@@ -15,6 +15,7 @@ from linebot.models import MessageEvent, TextSendMessage, FollowEvent, TemplateS
 from notion_auth.models import LineUser
 import uuid
 from django.core.cache import cache
+from chatBotExtension import handle
 
 # The URL of this server
 
@@ -67,66 +68,67 @@ class LineBotCallbackView(View):
 
     @handler.add(MessageEvent, message=TextSendMessage)
     def message_handler(self, event):
-        print("User ID:", event.source.user_id)  # 打印出 User ID
-        text: str = event.message.text
-        user_id = event.source.user_id
-        user_exists = LineUser.objects.filter(line_user_id=user_id)
-        if not user_exists:
-            # 建立新的user資料
-            print('建立新的資料')
-            user = LineUser(line_user_id=user_id)
-            user.save()
-        else:
-            user = LineUser.objects.get(line_user_id=user_id)
+        handle(event)
+        # print("User ID:", event.source.user_id)  # 打印出 User ID
+        # text: str = event.message.text
+        # user_id = event.source.user_id
+        # user_exists = LineUser.objects.filter(line_user_id=user_id)
+        # if not user_exists:
+        #     # 建立新的user資料
+        #     print('建立新的資料')
+        #     user = LineUser(line_user_id=user_id)
+        #     user.save()
+        # else:
+        #     user = LineUser.objects.get(line_user_id=user_id)
 
-        if text == "重新授權Notion":
-            state = str(uuid.uuid4())
-            cache.set(state, user_id, timeout=300)
-            u = f"https://www.notion.so/install-integration?response_type=code&client_id=5f8acc7a-6c3a-4344-b9e7-3c63a8fad01d&redirect_uri=https%3A%2F%2Fquan.squidspirit.com%2Fnotion%2Fredirect%2F&owner=user&state={state}"
-            message = f"請透過連結登入 {u}"
-            self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
+        # if text == "重新授權Notion":
+        #     state = str(uuid.uuid4())
+        #     cache.set(state, user_id, timeout=300)
+        #     u = f"https://www.notion.so/install-integration?response_type=code&client_id=5f8acc7a-6c3a-4344-b9e7-3c63a8fad01d&redirect_uri=https%3A%2F%2Fquan.squidspirit.com%2Fnotion%2Fredirect%2F&owner=user&state={state}"
+        #     message = f"請透過連結登入 {u}"
+        #     self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
 
-        elif text.lower() == "notion":
-            user_notion_token = LineUser.objects.get(line_user_id=user_id).notion_token
-            state = str(uuid.uuid4())
-            # print(user_notion_token)
-            # print(state)
-            u = f"https://www.notion.so/install-integration?response_type=code&client_id=5f8acc7a-6c3a-4344-b9e7-3c63a8fad01d&redirect_uri=https%3A%2F%2Fquan.squidspirit.com%2Fnotion%2Fredirect%2F&owner=user&state={state}"
-            cache.set(state, user_id, timeout=300)
-            # message = f"請透過連結登入 {self.server_url}/notion/auth/{state}" if not user_notion_token else f"使用者已經成功連線至Notion"
-            message = f"請透過連結登入 {u}" if not user_notion_token else f"使用者已經成功連線至Notion"
+        # elif text.lower() == "notion":
+        #     user_notion_token = LineUser.objects.get(line_user_id=user_id).notion_token
+        #     state = str(uuid.uuid4())
+        #     # print(user_notion_token)
+        #     # print(state)
+        #     u = f"https://www.notion.so/install-integration?response_type=code&client_id=5f8acc7a-6c3a-4344-b9e7-3c63a8fad01d&redirect_uri=https%3A%2F%2Fquan.squidspirit.com%2Fnotion%2Fredirect%2F&owner=user&state={state}"
+        #     cache.set(state, user_id, timeout=300)
+        #     # message = f"請透過連結登入 {self.server_url}/notion/auth/{state}" if not user_notion_token else f"使用者已經成功連線至Notion"
+        #     message = f"請透過連結登入 {u}" if not user_notion_token else f"使用者已經成功連線至Notion"
 
-            self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
-        elif text == "設定":
-            message = check_user_info(user)
-            self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
-        elif text.lower() == "eeclass":
-            button = TemplateSendMessage(
-                alt_text= "eeclass 連線",
-                template=ButtonsTemplate(
-                    title='eeclass 連線設定',
-                    text='請選擇連線設定',
-                    actions=[
-                        PostbackAction(
-                            label='設定帳號',
-                            data='action=設定帳號'
-                        ),
-                        MessageAction(
-                            label='設定密碼',
-                            text='設定密碼'
-                        ),
-                        MessageAction(
-                            label='連線測試',
-                            text='連線測試'
-                        )
-                    ]
-                ))
-            self.line_bot_api.reply_message(event.reply_token, button)
+        #     self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
+        # elif text == "設定":
+        #     message = check_user_info(user)
+        #     self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
+        # elif text.lower() == "eeclass":
+        #     button = TemplateSendMessage(
+        #         alt_text= "eeclass 連線",
+        #         template=ButtonsTemplate(
+        #             title='eeclass 連線設定',
+        #             text='請選擇連線設定',
+        #             actions=[
+        #                 PostbackAction(
+        #                     label='設定帳號',
+        #                     data='action=設定帳號'
+        #                 ),
+        #                 MessageAction(
+        #                     label='設定密碼',
+        #                     text='設定密碼'
+        #                 ),
+        #                 MessageAction(
+        #                     label='連線測試',
+        #                     text='連線測試'
+        #                 )
+        #             ]
+        #         ))
+        #     self.line_bot_api.reply_message(event.reply_token, button)
 
-            # message = "輸入 帳號 <eeclass帳號>\n輸入 密碼 <eeclass密碼>"
-        else:
-            print(text)
-            self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=text))
+        #     # message = "輸入 帳號 <eeclass帳號>\n輸入 密碼 <eeclass密碼>"
+        # else:
+        #     print(text)
+        #     self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=text))
 
     @handler.add(PostbackEvent)
     def handle_postback(self, event):
