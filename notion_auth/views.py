@@ -13,13 +13,14 @@ from requests.auth import HTTPBasicAuth
 
 # Create your views here.
 
-server_url = settings.ALLOWED_HOSTS[0]  # The URL of this server
+server_url = 'quan.squidspirit.com'  # The URL of this server
 redirect_uri = f"https://{server_url}/notion/redirect/"
 
 
 def notion_auth_start(request, state):
     # print(user_id)
     client_id = settings.NOTION_OAUTH_CLIENT_ID
+    print(client_id)
     authorization_base_url = "https://api.notion.com/v1/oauth/authorize"
     client = WebApplicationClient(settings.NOTION_OAUTH_CLIENT_ID, state=state)
     # print(authorization_base_url)

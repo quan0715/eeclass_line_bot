@@ -36,7 +36,7 @@ class LineBotCallbackView(View):
     line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN)
     parser = WebhookParser(settings.LINE_CHANNEL_SECRET)
     handler = WebhookHandler(settings.LINE_CHANNEL_SECRET)
-    server_url = "https://" + settings.ALLOWED_HOSTS[0]
+    server_url = "https://quan.squidspirit.com"
 
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
@@ -82,7 +82,8 @@ class LineBotCallbackView(View):
         if text == "重新授權Notion":
             state = str(uuid.uuid4())
             cache.set(state, user_id, timeout=300)
-            message = f"請透過連結登入 {self.server_url}/notion/auth/{state}"
+            u = f"https://www.notion.so/install-integration?response_type=code&client_id=5f8acc7a-6c3a-4344-b9e7-3c63a8fad01d&redirect_uri=https%3A%2F%2Fquan.squidspirit.com%2Fnotion%2Fredirect%2F&owner=user&state={state}"
+            message = f"請透過連結登入 {u}"
             self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
 
         elif text.lower() == "notion":
@@ -90,8 +91,10 @@ class LineBotCallbackView(View):
             state = str(uuid.uuid4())
             # print(user_notion_token)
             # print(state)
+            u = f"https://www.notion.so/install-integration?response_type=code&client_id=5f8acc7a-6c3a-4344-b9e7-3c63a8fad01d&redirect_uri=https%3A%2F%2Fquan.squidspirit.com%2Fnotion%2Fredirect%2F&owner=user&state={state}"
             cache.set(state, user_id, timeout=300)
-            message = f"請透過連結登入 {self.server_url}/notion/auth/{state}" if not user_notion_token else f"使用者已經成功連線至Notion"
+            # message = f"請透過連結登入 {self.server_url}/notion/auth/{state}" if not user_notion_token else f"使用者已經成功連線至Notion"
+            message = f"請透過連結登入 {u}" if not user_notion_token else f"使用者已經成功連線至Notion"
 
             self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
         elif text == "設定":
@@ -120,9 +123,9 @@ class LineBotCallbackView(View):
                 ))
             self.line_bot_api.reply_message(event.reply_token, button)
 
-
-            #message = "輸入 帳號 <eeclass帳號>\n輸入 密碼 <eeclass密碼>"
+            # message = "輸入 帳號 <eeclass帳號>\n輸入 密碼 <eeclass密碼>"
         else:
+            print(text)
             self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text=text))
 
     @handler.add(PostbackEvent)
@@ -131,8 +134,10 @@ class LineBotCallbackView(View):
         print(postback_data)
         if postback_data == 'action=設定帳號':
             self.line_bot_api.reply_message(event.reply_token, TextSendMessage(text="輸入EECLASS帳號"))
+     
     def connect_with_eeclass(self, message):
         pass
+
     @classmethod
     def update_auth_token(cls,user_id):
         cls.line_bot_api.push_message(user_id, TextSendMessage(text="與Notion連線成功"))
