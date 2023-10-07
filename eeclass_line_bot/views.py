@@ -11,7 +11,7 @@ from linebot import LineBotApi, WebhookParser, WebhookHandler
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
 from linebot.models import MessageEvent, TextSendMessage, FollowEvent, TemplateSendMessage, ButtonsTemplate, \
     MessageAction, PostbackAction, PostbackEvent
-
+from concurrent.futures import ThreadPoolExecutor
 from .chatBotExtension import handle
 from .chatBotModel import *
 
@@ -36,6 +36,7 @@ class LineBotCallbackView(View):
     parser = WebhookParser(settings.LINE_CHANNEL_SECRET)
     handler = WebhookHandler(settings.LINE_CHANNEL_SECRET)
     server_url = "https://quan.squidspirit.com"
+    threadPoolExecutor = ThreadPoolExecutor()
 
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
@@ -66,7 +67,14 @@ class LineBotCallbackView(View):
 
     @handler.add(MessageEvent, message=TextSendMessage)
     def message_handler(self, event):
-        self.line_bot_api.reply_message(event.reply_token, TextSendMessage(handle(event)))
+        def reply(event):
+            replies=handle(event)
+            for idx, reply in enumerate(replies):
+                if idx==len(replies)-1: break
+                self.line_bot_api.push_message(event.source.user_id, reply)
+            if len(replies):
+                self.line_bot_api.reply_message(event.reply_token, replies[-1])
+        self.threadPoolExecutor.submit(reply, event)
         # print("User ID:", event.source.user_id)  # 打印出 User ID
         # text: str = event.message.text
         # user_id = event.source.user_id

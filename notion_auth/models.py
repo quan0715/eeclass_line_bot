@@ -8,8 +8,10 @@ from django.urls import reverse
 class LineUser(models.Model):
     line_user_id = models.CharField(max_length=255, unique=True)
     notion_token = models.TextField(null=True, blank=True)
-    eeclass_username = models.CharField(max_length=255)
-    eeclass_password = models.CharField(max_length=255)
+    eeclass_db_id = models.CharField(max_length=255, blank=True, null=True)
+    eeclass_username = models.CharField(max_length=255, null='')
+    eeclass_password = models.CharField(max_length=255, null='')
+    
 
     class Meta:
         ordering = ['-line_user_id']

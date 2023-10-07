@@ -35,16 +35,15 @@ def notion_auth_start(request, state):
 def notion_auth_callback(request):
     # print(state)
     token_url = "https://api.notion.com/v1/oauth/token"
-    url = request.get_full_path()
-    print(url)
+    url = "https://quan.squidspirit.com" + request.get_full_path()
+    print(f"url: {url}")
     # print(request.session.get['user_id'])
     client = WebApplicationClient(settings.NOTION_OAUTH_CLIENT_ID)
     uri_request = (client.parse_request_uri_response(url))  # Extracts the code from the url
     state = uri_request['state']
     user_id = cache.get(state)
-    print(user_id)
-    token_request_params = client.prepare_token_request(token_url, url, redirect_uri, state= state)
-
+    token_request_params = client.prepare_token_request(token_url, url, redirect_uri, state=state)
+    print(token_request_params)
     #state = token_request_params[1]
     # print(cache.get(state))
     # print(token_request_params)
@@ -53,15 +52,33 @@ def notion_auth_callback(request):
         settings.NOTION_OAUTH_CLIENT_ID, settings.NOTION_OAUTH_SECRET_KEY)
     # authorization_code = f"{settings.NOTION_OAUTH_CLIENT_ID}:{settings.NOTION_OAUTH_SECRET_KEY}"
     # auth = base64.b64encode(authorization_code.encode('ascii'))
-    response = re.post(
-        token_request_params[0], headers=token_request_params[1], data=token_request_params[2], auth=auth)
+    # headers = {
+    #     "Accept": "application/json",
+    #     'Authorization' : f'Bearer {settings.NOTION_OAUTH_SECRET_KEY}',
+    #     'Content-Type' : 'application/json',
+    #     'Notion-Version' : '2022-06-28'
+    # }
+    print(auth)
+    print(token_request_params[2])
+    response = re.post(token_request_params[0], headers=token_request_params[1], data=token_request_params[2], auth=auth)
+    # body = {
+    #     'grant_type':'authorization_code',
+    #     'client_id': settings.NOTION_OAUTH_CLIENT_ID,
+    #     'redirect_uri':redirect_uri,
+    #     'code':uri_request['code']
+    # }
+    # response = re.post(token_request_params[0], headers=headers, json=body)
     data = response.json()
+    #print(response.request.body)
     print(data)
+    # try:
+    #TODO should check use exist or not?
     user = LineUser.objects.get(line_user_id=user_id)
+
     user.notion_token = data['access_token']
+    user.eeclass_db_id = data['duplicated_template_id']
     user.save()
     LineBotCallbackView.update_auth_token(user_id=user_id)
     # return redirect("https://line.me/R/ti/p/%4https://line.me0085coegp")
-    return HttpResponse('<a href="https://line.me/R/ti/p/%4https://line.me0085coegp">連線成功點我返回聊天室 </a>')
-
+    return HttpResponse('<a href="https://line.me/R/@0085coegp/next">連線成功點我返回聊天室 </a>')
 
