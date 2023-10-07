@@ -9,10 +9,11 @@ from NotionBot import *
 from NotionBot.base.Database import *
 from NotionBot.object import *
 from NotionBot.object.BlockObject import *
+
 @chat_status("default")
-@button_group('EECLASS HELPER', '輸入以下指令開啟下一步', 'oops')
+@button_group('EECLASS HELPER', '輸入以下指令開啟下一步', '輸入以下指令開啟下一步')
 def default_message(event):
-    jump_to(main_menu, event)
+    jump_to(main_menu, event.source.user_id)
     return [
         'Notion Oauth連線',
         'EECLASS帳號設定',
@@ -25,19 +26,19 @@ def default_message(event):
 def main_menu(event):
     match event.message.text:
         case 'Notion Oauth連線':
-            jump_to(oauth_connection, event, propagation=True)
+            jump_to(oauth_connection, event.source.user_id, propagation=True)
             return
         case 'EECLASS帳號設定':
-            jump_to(set_eeclass_account, event)
+            jump_to(set_eeclass_account, event.source.user_id)
             return '請輸入你的EECLASS 帳號'
         case 'EECLASS密碼設定':
-            jump_to(set_eeclass_password, event)
+            jump_to(set_eeclass_password, event.source.user_id)
             return '請輸入你的EECLASS 密碼'
         case 'EECLASS連線測試':
-            jump_to(test_eeclass_login, event, True)
+            jump_to(test_eeclass_login, event.source.user_id, True)
             return
         case _:
-            jump_to(default_message, event, True)
+            jump_to(default_message, event.source.user_id, True)
             return '沒有此項指令'
 
 
@@ -50,12 +51,9 @@ def oauth_connection(event):
     cache.set(state, event.source.user_id, timeout=300)
     u = f"https://www.notion.so/install-integration?response_type=code&client_id=5f8acc7a-6c3a-4344-b9e7-3c63a8fad01d&redirect_uri=https%3A%2F%2Fquan.squidspirit.com%2Fnotion%2Fredirect%2F&owner=user&state={state}"
     message = f"請透過連結登入 {u}"
-    if cache.has_key(state):
-        print(f'state of user {event.source.user_id} is {state}')
-    else:
-        print('cache fail')
-    jump_to(default_message, event)
+    jump_to(default_message, event.source.user_id)
     return message
+    
 
 from notion_auth.models import LineUser
 @chat_status("set eeclass account")
@@ -65,7 +63,7 @@ def set_eeclass_account(event):
         user = LineUser.objects.get_or_create(line_user_id=event.source.user_id)[0]
         user.eeclass_username = event.message.text
         user.save()
-        jump_to(default_message, event, True)
+        jump_to(default_message, event.source.user_id, True)
         return f'已更新你的帳號為 {event.message.text}'
     except Exception as e:
         return e
@@ -77,34 +75,28 @@ def set_eeclass_password(event):
     user = LineUser.objects.get_or_create(line_user_id=event.source.user_id)[0]
     user.eeclass_password = event.message.text
     user.save()
-    jump_to(default_message, event, True)
+    jump_to(default_message, event.source.user_id, True)
     return f'已更新你的密碼為 {event.message.text}'
 
 from eeclass_bot.EEAsyncBot import EEAsyncBot
 import asyncio
-import requests
 @chat_status("test eeclass login")
 @text
 def test_eeclass_login(event):
-    # TODO 嘗試登入
     user = LineUser.objects.get_or_create(line_user_id=event.source.user_id)[0]
-    # bot = EEAsyncBot(requests.Session(), user.eeclass_username, user.eeclass_password)
     login_success=False
-    #try:
-    print("login test")
-    asyncio.run(eeclass_test(user.eeclass_username, user.eeclass_password, user))
-    login_success=True
-    #except:
-    #    login_success = False
-    #     loop=asyncio.new_event_loop()
-    #     asyncio.set_event_loop(loop)
-    # # login_success=loop.run_until_complete(loop.create_task(bot.login()))
-    # try:
-    #     loop.run_until_complete(loop.create_task(bot.login()))
-    
-    # except Exception as e:
-    #     print(e)
-    jump_to(default_message, event, True)
+    try:
+        loop = asyncio.get_event_loop()
+    except:
+        loop=asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    try:
+        task = loop.create_task(eeclass_test(user.eeclass_username, user.eeclass_password, user))
+        loop.run_until_complete(task)
+        login_success = task.result()
+    except Exception as e:
+        print(e)
+    jump_to(default_message, event.source.user_id, True)
     if login_success:
         return '帳號認證成功'
     else:
@@ -114,7 +106,7 @@ def test_eeclass_login(event):
 async def eeclass_test(account, password, user: LineUser):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         bot = EEAsyncBot(session, account, password)
-        await bot.login()
+        if not await bot.login(): return False
         await bot.retrieve_all_course(check=True, refresh=True)
         await bot.retrieve_all_bulletins()
         all_bulletins_detail = await bot.retrieve_all_bulletins_details()

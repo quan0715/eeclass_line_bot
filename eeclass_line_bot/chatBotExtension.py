@@ -39,7 +39,6 @@ def button_group(title="", text="", default_text='default alt text'):
         return wrapper
     return outer
 
-import time
 def handle(event):
     assert __default_status is not None
     try:
@@ -55,7 +54,6 @@ def handle(event):
             print(status)
             reply = __statuses.get(status, __statuses[__default_status])(event)
             if reply: replies.append(reply)
-            # time.sleep(5)
             if not ChatStatus.objects.get(line_user_id=user_id).propagation:
                 break
         print(ChatStatus.objects.get(line_user_id=user_id).status)
@@ -64,9 +62,8 @@ def handle(event):
         print(e)
 
 
-def jump_to(func:callable, event, propagation=False):
+def jump_to(func:callable, user_id, propagation=False):
     try:
-        user_id = event.source.user_id
         status_exists = ChatStatus.objects.filter(line_user_id=user_id)
         if not status_exists:
             chat_status = ChatStatus(line_user_id=user_id)

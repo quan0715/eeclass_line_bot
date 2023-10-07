@@ -147,6 +147,16 @@ class LineBotCallbackView(View):
     #     pass
 
     @classmethod
-    def update_auth_token(cls,user_id):
+    def notion_auth_callback(cls, user_id):
+        class fake_source:
+            def __init__(self, user_id):
+                self.user_id=user_id
+
+        class fake_event:
+            def __init__(self, user_id):
+                self.source=fake_source(user_id)
+
         cls.line_bot_api.push_message(user_id, TextSendMessage(text="與Notion連線成功"))
+        from .chatBotModel import default_message
+        cls.line_bot_api.push_message(user_id, default_message(fake_event(user_id)))
 
