@@ -18,10 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 
 from eeclass_line_bot import views
+from test_app import views as t_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('callback', views.LineBotCallbackView.as_view()),
-    path('notion/', include('notion_auth.urls'))
+    path('notion/', include('notion_auth.urls')),
+    path('test/', t_views.index),
 ]
 

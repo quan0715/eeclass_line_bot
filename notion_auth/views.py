@@ -13,6 +13,7 @@ from requests.auth import HTTPBasicAuth
 
 # Create your views here.
 
+#server_url = settings.ALLOWED_HOSTS[0]  # The URL of this server
 server_url = settings.ALLOWED_HOSTS[0]  # The URL of this server
 redirect_uri = f"https://{server_url}/notion/redirect/"
 
