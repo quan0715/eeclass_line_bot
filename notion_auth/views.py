@@ -13,14 +13,14 @@ from requests.auth import HTTPBasicAuth
 
 # Create your views here.
 
-#server_url = settings.ALLOWED_HOSTS[0]  # The URL of this server
-server_url = settings.ALLOWED_HOSTS[0]  # The URL of this server
+server_url = 'quan.squidspirit.com'  # The URL of this server
 redirect_uri = f"https://{server_url}/notion/redirect/"
 
 
 def notion_auth_start(request, state):
     # print(user_id)
     client_id = settings.NOTION_OAUTH_CLIENT_ID
+    print(client_id)
     authorization_base_url = "https://api.notion.com/v1/oauth/authorize"
     client = WebApplicationClient(settings.NOTION_OAUTH_CLIENT_ID, state=state)
     # print(authorization_base_url)
@@ -35,33 +35,26 @@ def notion_auth_start(request, state):
 def notion_auth_callback(request):
     # print(state)
     token_url = "https://api.notion.com/v1/oauth/token"
-    url = request.get_full_path()
-    print(url)
+    url = "https://quan.squidspirit.com" + request.get_full_path()
     # print(request.session.get['user_id'])
     client = WebApplicationClient(settings.NOTION_OAUTH_CLIENT_ID)
-    uri_request = (client.parse_request_uri_response(url))  # Extracts the code from the url
-    state = uri_request['state']
-    user_id = cache.get(state)
-    print(user_id)
-    token_request_params = client.prepare_token_request(token_url, url, redirect_uri, state= state)
-
-    #state = token_request_params[1]
-    # print(cache.get(state))
-    # print(token_request_params)
-    # Makes a request for the token, authenticated with the client ID and secret
-    auth = HTTPBasicAuth(
-        settings.NOTION_OAUTH_CLIENT_ID, settings.NOTION_OAUTH_SECRET_KEY)
-    # authorization_code = f"{settings.NOTION_OAUTH_CLIENT_ID}:{settings.NOTION_OAUTH_SECRET_KEY}"
-    # auth = base64.b64encode(authorization_code.encode('ascii'))
-    response = re.post(
-        token_request_params[0], headers=token_request_params[1], data=token_request_params[2], auth=auth)
-    data = response.json()
-    print(data)
-    user = LineUser.objects.get(line_user_id=user_id)
-    user.notion_token = data['access_token']
-    user.save()
-    LineBotCallbackView.update_auth_token(user_id=user_id)
-    # return redirect("https://line.me/R/ti/p/%4https://line.me0085coegp")
-    return HttpResponse('<a href="https://line.me/R/ti/p/%4https://line.me0085coegp">連線成功點我返回聊天室 </a>')
-
+    try:
+        uri_request = (client.parse_request_uri_response(url))  # Extracts the code from the url
+        state = uri_request['state']
+        user_id = cache.get(state)
+        token_request_params = client.prepare_token_request(token_url, url, redirect_uri, state=state)
+        auth = HTTPBasicAuth(
+            settings.NOTION_OAUTH_CLIENT_ID, settings.NOTION_OAUTH_SECRET_KEY)
+        response = re.post(token_request_params[0], headers=token_request_params[1], data=token_request_params[2], auth=auth)
+        data = response.json()
+        user = LineUser.objects.get(line_user_id=user_id)
+        user.notion_token = data['access_token']
+        user.eeclass_db_id = data['duplicated_template_id']
+        user.save()
+        LineBotCallbackView.notion_auth_callback(user_id=user_id)
+    except Exception as e:
+        print(e)
+        return HttpResponse('<div>something wrong </div>')
+    return redirect("https://line.me/R/@0085coegp/next")
+    return HttpResponse('<a href="https://line.me/R/@0085coegp/next">連線成功點我返回聊天室 </a>')
 
