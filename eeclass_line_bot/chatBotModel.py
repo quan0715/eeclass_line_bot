@@ -1,7 +1,6 @@
 from .chatBotExtension import chat_status, jump_to, text, button_group
 from notion_auth.models import LineUser
 
-
 @chat_status("default")
 @button_group('EECLASS HELPER', '輸入以下指令開啟下一步', '輸入以下指令開啟下一步')
 def default_message(event):
@@ -27,7 +26,7 @@ def main_menu(event):
             jump_to(set_eeclass_password, event.source.user_id)
             return '請輸入你的EECLASS 密碼'
         case 'EECLASS連線測試':
-            jump_to(test_eeclass_login, event.source.user_id, True)
+            jump_to(eeclass_login_test, event.source.user_id, True)
             return
         case _:
             jump_to(default_message, event.source.user_id, True)
@@ -73,7 +72,7 @@ import asyncio
 from .eeclass import eeclass_test_login
 @chat_status("test eeclass login")
 @text
-def test_eeclass_login(event):
+def eeclass_login_test(event):
     user = LineUser.objects.get_or_create(line_user_id=event.source.user_id)[0]
     login_success=False
     try:
@@ -85,6 +84,7 @@ def test_eeclass_login(event):
         task = loop.create_task(eeclass_test_login(user.eeclass_username, user.eeclass_password))
         loop.run_until_complete(task)
         login_success = task.result()
+        print(login_success)
     except Exception as e:
         print(e)
     jump_to(default_message, event.source.user_id, True)
