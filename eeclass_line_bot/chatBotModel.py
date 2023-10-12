@@ -84,7 +84,6 @@ def eeclass_login_test(event):
         task = loop.create_task(eeclass_test_login(user.eeclass_username, user.eeclass_password))
         loop.run_until_complete(task)
         login_success = task.result()
-        print(login_success)
     except Exception as e:
         print(e)
     jump_to(default_message, event.source.user_id, True)

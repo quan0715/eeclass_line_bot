@@ -6,6 +6,15 @@ __invert_status_map:[callable, str]={}
 
 from linebot.models import TextSendMessage, TemplateSendMessage, ButtonsTemplate, MessageAction
 
+def get_user_status(user_id):
+    return ChatStatus.objects.get(line_user_id=user_id).status
+
+def get_func_status(func):
+    return __invert_status_map[func]
+
+def get_status_func(status):
+    return __statuses[status]
+
 def chat_status(status_id:str, default=False):
     def wrapper(func):
         __statuses[status_id]=func
@@ -51,12 +60,10 @@ def handle(event):
         replies = []
         while True:
             status = ChatStatus.objects.get(line_user_id=user_id).status
-            print(status)
             reply = __statuses.get(status, __statuses[__default_status])(event)
             if reply: replies.append(reply)
             if not ChatStatus.objects.get(line_user_id=user_id).propagation:
                 break
-        print(ChatStatus.objects.get(line_user_id=user_id).status)
         return replies
     except Exception as e:
         print(e)
