@@ -14,6 +14,24 @@ async def eeclass_test_login(account, password):
         return bot.login()
 
 
+async def fetch_all_eeclass_data(account, password, user: LineUser):
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
+        bot = EEAsyncBot(session, account, password)
+        bot.login()
+        await bot.retrieve_all_course(check=True, refresh=True)
+        await bot.retrieve_all_bulletins()
+        all_bulletins_detail = await bot.retrieve_all_bulletins_details()
+        await bot.retrieve_all_homeworks()
+        all_homework_detail = await bot.retrieve_all_homeworks_details()
+        await bot.retrieve_all_material()
+        all_material_detail = await bot.retrieve_all_materials_details()
+        notion_bot = Notion(user.notion_token)
+        db = notion_bot.get_database(user.eeclass_db_id)
+        await update_all_bulletin_info_to_notion_db(bot.bulletins_detail_list , db)
+        await update_all_homework_info_to_notion_db(bot.homeworks_detail_list, db)
+        await update_all_material_info_to_notion_db(bot.materials_detail_list, db)
+        return all_bulletins_detail, all_homework_detail, all_material_detail
+
 async def eeclass_test(account, password, user: LineUser):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         bot = EEAsyncBot(session, account, password)
