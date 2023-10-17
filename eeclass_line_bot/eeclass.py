@@ -17,7 +17,7 @@ async def eeclass_test_login(account, password):
 async def fetch_all_eeclass_data(account, password, user: LineUser):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         bot = EEAsyncBot(session, account, password)
-        bot.login()
+        await bot.login()
         await bot.retrieve_all_course(check=True, refresh=True)
         await bot.retrieve_all_bulletins()
         all_bulletins_detail = await bot.retrieve_all_bulletins_details()
