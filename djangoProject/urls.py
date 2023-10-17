@@ -22,7 +22,7 @@ from test_app import views as t_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('callback/', views.LineBotCallbackView.as_view()),
+    path('callback', views.LineBotCallbackView.as_view()),
     path('notion/', include('notion_auth.urls')),
     path('test/', t_views.index),
 ]
