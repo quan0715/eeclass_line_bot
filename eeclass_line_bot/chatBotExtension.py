@@ -6,6 +6,15 @@ __invert_status_map:[callable, str]={}
 
 from linebot.models import TextSendMessage, TemplateSendMessage, ButtonsTemplate, MessageAction
 
+def get_user_status(user_id):
+    return ChatStatus.objects.get(line_user_id=user_id).status
+
+def get_func_status(func):
+    return __invert_status_map[func]
+
+def get_status_func(status):
+    return __statuses[status]
+
 def chat_status(status_id:str, default=False):
     def wrapper(func):
         __statuses[status_id]=func
@@ -22,7 +31,15 @@ def text(func):
         return TextSendMessage(text) if text else None
     return wrapper
 
-def button_group(title="", text="", default_text='default alt text'):
+def button_group(title="title", text="text", default_text='default alt text'):
+    """
+    wrap a function returning a list of string as the button group text of chatbot
+    \ttitle: title of the button group
+    \ttext: text of the button group
+    \tdefault_text: text showed outside chat room
+    warning: button group has limits of size 4
+    warning: title, text default_text are all required to be not empty
+    """
     def outer(func):
         def wrapper(event):
             button_texts = func(event)
