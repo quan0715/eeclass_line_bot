@@ -40,20 +40,17 @@ def test_default_message(event):
     from eeclass_line_bot.chatBotModel import default_message
     assert default_message(event)==[
         'Notion Oauth連線',
-        'EECLASS帳號設定',
-        'EECLASS密碼設定',
-        'EECLASS連線測試'
+        'EECLASS設定',
+        '設定排程'
     ]
 
 def test_main_menu(event):
     from eeclass_line_bot.chatBotModel import main_menu
     event.message.text='Notion Oauth連線'
     assert main_menu(event)==None
-    event.message.text='EECLASS帳號設定'
-    assert main_menu(event)=='請輸入你的EECLASS 帳號'
-    event.message.text='EECLASS密碼設定'
-    assert main_menu(event)=='請輸入你的EECLASS 密碼'
-    event.message.text='EECLASS連線測試'
+    event.message.text='EECLASS設定'
+    assert main_menu(event)==None
+    event.message.text='設定排程'
     assert main_menu(event)==None
     event.message.text='rdas;dklfj;klj'
     assert main_menu(event)=='沒有此項指令'
