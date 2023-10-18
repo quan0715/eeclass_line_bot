@@ -1,6 +1,6 @@
 from .eeclass import fetch_all_eeclass_data
 import asyncio
-import datetime
+from datetime import datetime
 from linebot.models import TextSendMessage
 from notion_auth.models import LineUser
 
