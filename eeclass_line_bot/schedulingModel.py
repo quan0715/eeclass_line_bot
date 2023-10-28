@@ -15,4 +15,4 @@ def get_scheduling_job(user_id):
         asyncio.run(coro)
         print(f'啟動: 目前時間{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
         LineBotCallbackView.push_message(user_id, message)
-    return scheduling
+    return user_id
